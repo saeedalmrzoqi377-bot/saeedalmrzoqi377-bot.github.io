@@ -1,0 +1,747 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Saeed's interactive TimelineJS story about the transformation of the UAE pearl industry from livelihood to living heritage.">
+  <title>From Livelihood to Heritage | UAE Pearl Industry</title>
+  <link rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <style>
+    :root {
+      --deep-sea: #061c25;
+      --sea: #0b4f5c;
+      --turquoise: #35b7ac;
+      --pearl: #f7f2e8;
+      --sand: #d9b77e;
+      --ink: #17252a;
+      --muted: #557078;
+      --line: rgba(53, 183, 172, 0.34);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--deep-sea);
+      color: var(--pearl);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 12% 20%, rgba(53, 183, 172, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 8%, rgba(217, 183, 126, 0.14), transparent 24%);
+      z-index: 0;
+    }
+
+    .shell {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .topbar {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 12px clamp(16px, 3vw, 42px);
+      background: rgba(6, 28, 37, 0.95);
+      border-bottom: 1px solid rgba(247, 242, 232, 0.12);
+    }
+
+    .brand { min-width: 0; }
+
+    .eyebrow {
+      margin: 0 0 3px;
+      color: var(--sand);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(18px, 2.2vw, 28px);
+      line-height: 1.1;
+      font-weight: 750;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: rgba(247, 242, 232, 0.72);
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    button {
+      min-height: 42px;
+      border: 1px solid rgba(247, 242, 232, 0.22);
+      border-radius: 999px;
+      padding: 9px 16px;
+      background: rgba(247, 242, 232, 0.07);
+      color: var(--pearl);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover { background: rgba(53, 183, 172, 0.18); }
+    button:focus-visible { outline: 3px solid var(--sand); outline-offset: 2px; }
+
+    .primary {
+      border-color: transparent;
+      background: var(--turquoise);
+      color: #052128;
+    }
+
+    .primary:hover { background: #58c8bf; }
+
+    #timeline-embed {
+      width: 100%;
+      min-height: 0;
+      background: var(--pearl);
+    }
+
+    .loading {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% 45%, rgba(53, 183, 172, 0.13), transparent 24%),
+        var(--pearl);
+      text-align: center;
+      padding: 24px;
+    }
+
+    .loading strong { display: block; font-size: 22px; margin-bottom: 8px; }
+
+    dialog {
+      width: min(900px, calc(100% - 28px));
+      max-height: min(84vh, 900px);
+      border: 1px solid rgba(6, 28, 37, 0.16);
+      border-radius: 22px;
+      padding: 0;
+      color: var(--ink);
+      background: #fbf8f1;
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.34);
+    }
+
+    dialog::backdrop {
+      background: rgba(3, 17, 23, 0.78);
+      backdrop-filter: blur(4px);
+    }
+
+    .dialog-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 19px 22px;
+      background: var(--deep-sea);
+      color: var(--pearl);
+    }
+
+    .dialog-head h2 { margin: 0; font-size: 22px; }
+    .dialog-head button { min-width: 42px; padding: 8px 13px; }
+
+    .dialog-body {
+      padding: 24px;
+      overflow: auto;
+    }
+
+    .intro {
+      margin: 0 0 20px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    .section-title {
+      margin: 28px 0 12px;
+      color: var(--sea);
+      font-size: 18px;
+    }
+
+    .reflection-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .reflection {
+      padding: 18px;
+      border-radius: 15px;
+      background: #ffffff;
+      border-top: 4px solid var(--turquoise);
+      box-shadow: 0 8px 24px rgba(6, 28, 37, 0.07);
+    }
+
+    .reflection .number {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      margin-bottom: 9px;
+      border-radius: 50%;
+      background: var(--sea);
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .reflection h3 { margin: 0 0 9px; font-size: 15px; line-height: 1.35; }
+    .reflection p { margin: 0; color: #40585f; font-size: 14px; line-height: 1.62; }
+
+    .source-list {
+      margin: 0;
+      padding-left: 22px;
+      color: #40585f;
+      line-height: 1.65;
+    }
+
+    .source-list li { margin: 7px 0; }
+    a { color: #086e78; text-underline-offset: 2px; }
+
+    .publish-box {
+      margin-top: 16px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--sand);
+      background: #f3ead9;
+      border-radius: 0 12px 12px 0;
+    }
+
+    .publish-box h3 { margin: 0 0 8px; font-size: 16px; }
+    .publish-box ol { margin: 0; padding-left: 20px; color: #40585f; line-height: 1.6; }
+
+    .dialog-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .dialog-actions button { color: var(--deep-sea); border-color: rgba(6, 28, 37, 0.22); }
+    .dialog-actions .primary { color: #052128; }
+
+    .feedback-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--sea);
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      resize: vertical;
+      border: 1px solid #c9d6d6;
+      border-radius: 11px;
+      padding: 12px;
+      background: #fff;
+      color: var(--ink);
+      font: 14px/1.5 Inter, "Segoe UI", Arial, sans-serif;
+    }
+
+    textarea:focus { outline: 3px solid rgba(53, 183, 172, 0.28); border-color: var(--turquoise); }
+
+    .status {
+      min-height: 20px;
+      margin-top: 9px;
+      color: var(--sea);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .fallback {
+      height: 100%;
+      overflow: auto;
+      padding: 26px clamp(18px, 4vw, 54px) 54px;
+      background: #f7f2e8;
+      color: var(--ink);
+    }
+
+    .fallback h2 { margin: 0; color: var(--deep-sea); }
+    .fallback > p { color: var(--muted); }
+
+    .fallback-card {
+      display: grid;
+      grid-template-columns: minmax(120px, 190px) 1fr;
+      gap: 22px;
+      padding: 22px 0;
+      border-top: 1px solid rgba(11, 79, 92, 0.22);
+    }
+
+    .fallback-date { color: var(--sea); font-weight: 800; }
+    .fallback-card h3 { margin: 0 0 8px; }
+    .fallback-card p { margin: 0; line-height: 1.65; color: #40585f; }
+
+    /* TimelineJS visual theme */
+    .tl-timeline { font-family: Inter, "Segoe UI", Arial, sans-serif !important; }
+    .tl-slide { background-color: var(--pearl) !important; }
+    .tl-slide-content-container { color: var(--ink); }
+    .tl-text h2.tl-headline,
+    .tl-text h2.tl-headline-title { color: var(--deep-sea) !important; font-weight: 780 !important; }
+    .tl-text h3.tl-headline-date { color: var(--sea) !important; font-weight: 750 !important; }
+    .tl-text-content p { color: #344d54 !important; line-height: 1.65 !important; }
+    .tl-caption { color: #40585f !important; font-size: 13px !important; line-height: 1.45 !important; }
+    .tl-credit { color: #647b81 !important; }
+    .tl-timenav { background: #ecdfc8 !important; border-top-color: #d3bd97 !important; }
+    .tl-timeaxis-background { background-color: #f6efe3 !important; }
+    .tl-timeaxis .tl-timeaxis-content-container .tl-timeaxis-major .tl-timeaxis-tick:before,
+    .tl-timeaxis .tl-timeaxis-content-container .tl-timeaxis-minor .tl-timeaxis-tick:before { border-color: rgba(11,79,92,.23) !important; }
+    .tl-timemarker .tl-timemarker-content-container { background-color: #fffaf0 !important; border-color: #cdbb98 !important; }
+    .tl-timemarker.tl-timemarker-active .tl-timemarker-content-container { background-color: var(--turquoise) !important; border-color: var(--sea) !important; }
+    .tl-timemarker.tl-timemarker-active .tl-timemarker-content-container .tl-timemarker-content .tl-timemarker-text h2.tl-headline { color: #052128 !important; }
+    .tl-slidenav-previous .tl-slidenav-title,
+    .tl-slidenav-next .tl-slidenav-title,
+    .tl-slidenav-previous .tl-slidenav-description,
+    .tl-slidenav-next .tl-slidenav-description { color: var(--deep-sea) !important; }
+
+    @media (max-width: 840px) {
+      .reflection-grid, .feedback-grid { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; }
+      .brand p { display: none; }
+      .actions button:first-child { display: none; }
+      .fallback-card { grid-template-columns: 1fr; gap: 7px; }
+    }
+
+    @media (max-width: 520px) {
+      .topbar { min-height: 68px; padding: 10px 12px; }
+      .eyebrow { font-size: 10px; }
+      .brand h1 { font-size: 17px; max-width: 220px; }
+      button { padding: 8px 12px; }
+      .dialog-body { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <p class="eyebrow">TimelineJS · Saeed · Zayed University</p>
+        <h1>From Livelihood to Heritage</h1>
+        <p>How technology, crisis, and oil transformed the UAE pearl industry</p>
+      </div>
+      <div class="actions">
+        <button id="downloadButton" type="button">Download timeline data</button>
+        <button id="openNotes" class="primary" type="button">Reflection &amp; sources</button>
+      </div>
+    </header>
+
+    <section id="timeline-embed" aria-label="Interactive history of the UAE pearl industry">
+      <div class="loading">
+        <div><strong>Opening the pearl-industry timeline…</strong>Use the arrows or the dates below to move through the story.</div>
+      </div>
+    </section>
+
+    <section id="fallback" class="fallback" hidden aria-label="Text version of the timeline">
+      <h2>UAE Pearl Industry Timeline</h2>
+      <p>The visual timeline could not load. This complete text version keeps the story available.</p>
+      <div id="fallbackEvents"></div>
+    </section>
+  </main>
+
+  <dialog id="notesDialog" aria-labelledby="notesTitle">
+    <div class="dialog-head">
+      <h2 id="notesTitle">Reflection, sources &amp; peer review</h2>
+      <button id="closeNotes" type="button" aria-label="Close">Close</button>
+    </div>
+    <div class="dialog-body">
+      <p class="intro"><strong>Selected tool:</strong> TimelineJS. I chose it because it presents dates, short text, photographs, and maps in one clear story. The design uses simple B2-level English for university classmates and the instructor.</p>
+
+      <h3 class="section-title">Three reflection answers</h3>
+      <div class="reflection-grid" id="reflections">
+        <article class="reflection">
+          <span class="number">1</span>
+          <h3>What is the main change and central argument?</h3>
+          <p>The main change is the movement from pearling as a major source of income to pearling as protected cultural heritage. My timeline argues that local skill did not suddenly lose its value. Outside forces changed the system: cultured pearls created cheaper competition, the Great Depression reduced spending, and oil later offered new jobs. Today, museums and pearl farms keep the knowledge alive, even though pearling no longer supports the economy in the same way.</p>
+        </article>
+        <article class="reflection">
+          <span class="number">2</span>
+          <h3>Which event is the turning point, and why?</h3>
+          <p>The arrival of cultured pearls in the 1920s is the turning point. Natural Gulf pearls were rare and expensive, and divers took serious risks to collect them. Cultured pearls could be produced more regularly and sold for less. This changed what buyers expected and weakened demand for Gulf pearls. The Great Depression made the decline faster, but cultured pearls had already changed the market.</p>
+        </article>
+        <article class="reflection">
+          <span class="number">3</span>
+          <h3>How do images and media strengthen the argument?</h3>
+          <p>Images show the human side of the industry. The diving photographs reveal teamwork and danger. The Delma Museum shows how trade wealth became heritage, and the oil tanker shows the scale of economic change. The modern pearl farm connects the past with sustainability and tourism. With text only, the audience would know the facts but would feel less of the effort, risk, and transformation.</p>
+        </article>
+      </div>
+
+      <div class="dialog-actions">
+        <button id="copyReflections" class="primary" type="button">Copy the three answers</button>
+        <button id="downloadButtonDialog" type="button">Download TimelineJS CSV</button>
+      </div>
+      <div id="copyStatus" class="status" role="status" aria-live="polite"></div>
+
+      <h3 class="section-title">Peer-review notes</h3>
+      <p class="intro">Ask a classmate to complete these three boxes. The answers stay on this device.</p>
+      <div class="feedback-grid">
+        <label>Clarity
+          <textarea id="peerClarity" placeholder="Is the main change easy to understand? Give one reason."></textarea>
+        </label>
+        <label>Design
+          <textarea id="peerDesign" placeholder="Which image or design choice works best? Suggest one improvement."></textarea>
+        </label>
+        <label>Effectiveness
+          <textarea id="peerEffectiveness" placeholder="Is the turning point convincing? Explain why."></textarea>
+        </label>
+      </div>
+
+      <h3 class="section-title">Research sources</h3>
+      <ol class="source-list">
+        <li><a href="https://abudhabiculture.ae/en/cultural-heritage/tangible/archaeology/marawah-island" target="_blank" rel="noreferrer">Abu Dhabi Culture: Marawah Island</a> — early settlement, pearling, and maritime trade.</li>
+        <li><a href="https://abudhabiculture.ae/en/cultural-heritage/intangible/heritage-register/traditional-handicraft/pearl-diving" target="_blank" rel="noreferrer">Abu Dhabi Culture: Pearl Diving</a> — season, crew roles, tools, and working conditions.</li>
+        <li><a href="https://library.dctabudhabi.ae/sites/default/files/2025-04/delma_museum_0.pdf" target="_blank" rel="noreferrer">Department of Culture and Tourism – Abu Dhabi: Delma Museum</a> — the peak period, Delma market, trade links, decline, and Bait Al Muraikhi.</li>
+        <li><a href="https://uaeinteract.com/uaeint_misc/pdf/perspectives/05.pdf" target="_blank" rel="noreferrer">UAE Interact: Economic and social history</a> — decline during the 1930s and the move into the oil era.</li>
+        <li><a href="https://www.adnoc.ae/en/Our-Story/Our-Heritage" target="_blank" rel="noreferrer">ADNOC: Our Heritage</a> — early oil milestones and archival images.</li>
+        <li><a href="https://suwaidipearls.ae/" target="_blank" rel="noreferrer">Suwaidi Pearls</a> — the 2004 revival of Arabian pearl culture in Al Rams.</li>
+      </ol>
+
+      <div class="publish-box">
+        <h3>How to create the public link for Blackboard</h3>
+        <ol>
+          <li>Select <strong>Download TimelineJS CSV</strong> above.</li>
+          <li>Open <a href="https://timeline.knightlab.com/" target="_blank" rel="noreferrer">TimelineJS</a> and make a copy of its Google Sheets template.</li>
+          <li>Paste the downloaded rows into the template, publish the sheet to the web, and paste that sheet link into TimelineJS.</li>
+          <li>Open the preview, test every event and image, then copy the final TimelineJS URL into Blackboard.</li>
+        </ol>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+  <script>
+    const sourceLinks = {
+      marawah: "https://abudhabiculture.ae/en/cultural-heritage/tangible/archaeology/marawah-island",
+      diving: "https://abudhabiculture.ae/en/cultural-heritage/intangible/heritage-register/traditional-handicraft/pearl-diving",
+      delma: "https://library.dctabudhabi.ae/sites/default/files/2025-04/delma_museum_0.pdf",
+      history: "https://uaeinteract.com/uaeint_misc/pdf/perspectives/05.pdf",
+      adnoc: "https://www.adnoc.ae/en/Our-Story/Our-Heritage",
+      suwaidi: "https://suwaidipearls.ae/"
+    };
+
+    const timelineData = {
+      title: {
+        text: {
+          headline: "From Livelihood to Heritage",
+          text: "<p><strong>How the UAE pearl industry changed over time</strong></p><p>Pearling supported Gulf coastal communities for centuries. This timeline argues that global technology and markets made natural pearls less competitive. Oil later created new work, while museums and pearl farms kept the knowledge alive.</p>"
+        },
+        media: {
+          url: "https://media.assettype.com/gulfnews%2F2024-11-17%2Foxcdisgt%2FPEARL_2_1625585755946_17a7c76272b_original_ratio.jpg",
+          caption: "A pearl-diving crew prepares at sea. The image introduces the teamwork behind every pearl.",
+          credit: "National Archives photograph via <a href='https://gulfnews.com/uae/year-of-the-50th/year-of-the-50th-a-look-at-uaes-pearl-diving-history-1.1625588554243' target='_blank' rel='noreferrer'>Gulf News</a>"
+        }
+      },
+      eras: [
+        { start_date: { year: -5500 }, end_date: { year: 1879 }, text: { headline: "Deep roots" } },
+        { start_date: { year: 1880 }, end_date: { year: 1919 }, text: { headline: "Economic lifeline" } },
+        { start_date: { year: 1920 }, end_date: { year: 1969 }, text: { headline: "Crisis and change" } },
+        { start_date: { year: 1970 }, end_date: { year: 2026 }, text: { headline: "Heritage and renewal" } }
+      ],
+      events: [
+        {
+          unique_id: "marawah-roots",
+          start_date: { year: -5500, display_date: "About 7,500 years ago" },
+          group: "Deep roots",
+          text: {
+            headline: "Pearling begins on Marawah Island",
+            text: "<p>Archaeology on Marawah Island shows that Neolithic communities knew the sea well and collected pearls. They also traded by boat, possibly using pearls as valuable goods. This evidence makes pearling part of the UAE's story long before modern states or oil.</p><p><a href='" + sourceLinks.marawah + "' target='_blank' rel='noreferrer'>Read the evidence</a></p>"
+          },
+          media: {
+            url: "https://oldimg.emirates247.com/polopoly_fs/1.690275.1571640978%21/image/image.jpg",
+            caption: "The small size of the ancient pearl makes the 7,500-year history feel real and measurable.",
+            credit: "DCT Abu Dhabi image via <a href='https://www.emirates247.com/news/emirates/world-s-oldest-known-natural-pearl-discovered-on-marawah-island-2019-10-21-1.690274' target='_blank' rel='noreferrer'>Emirates 24|7</a>"
+          }
+        },
+        {
+          unique_id: "industry-peak",
+          start_date: { year: 1880, display_date: "Late 1800s" },
+          end_date: { year: 1919 },
+          group: "Economic lifeline",
+          text: {
+            headline: "Pearling reaches its economic peak",
+            text: "<p>By the late nineteenth and early twentieth centuries, pearling was one of the Gulf's most important industries. Divers, boat owners, merchants, rope pullers, singers, and families all depended on the season. The whole coastal economy was connected to one natural resource.</p><p><a href='" + sourceLinks.delma + "' target='_blank' rel='noreferrer'>Explore Delma Museum's history</a></p>"
+          },
+          media: {
+            url: "https://images.squarespace-cdn.com/content/v1/653fccaa2454b577f648dcbd/1710760480934-2JNJAYM08FXDLX7BYFV2/Screenshot%2B2023-08-04%2Bat%2B19.03.21.png",
+            caption: "The divers and ropes show that pearl wealth depended on difficult physical work.",
+            credit: "Historic image discussed by <a href='https://www.afikra.com/blog/rhythms-of-the-sea' target='_blank' rel='noreferrer'>afikra</a>"
+          }
+        },
+        {
+          unique_id: "delma-market",
+          start_date: { year: 1895, display_date: "Late 1800s–early 1900s" },
+          group: "Economic lifeline",
+          text: {
+            headline: "Delma becomes a busy pearl market",
+            text: "<p>At the end of each season, Delma Island held an annual market. Merchants arrived to buy pearls and exchange other goods. Delma connected Gulf communities with Bombay, now Mumbai, and East Africa. Pearls therefore linked local work to a much larger trade system.</p><p><a href='" + sourceLinks.delma + "' target='_blank' rel='noreferrer'>View the museum guide</a></p>"
+          },
+          media: {
+            url: "https://www.google.com/maps/place/Dalma+Island/@24.485,52.31,8z",
+            caption: "The map places Delma inside the sea routes that connected Gulf pearls with international buyers.",
+            credit: "Map: Google Maps"
+          }
+        },
+        {
+          unique_id: "diving-season",
+          start_date: { year: 1900, month: 6, day: 1, display_date: "Every year: 1 June–30 September" },
+          end_date: { year: 1900, month: 9, day: 30 },
+          group: "Economic lifeline",
+          text: {
+            headline: "Ghous Al-Kabir: four months at sea",
+            text: "<p>The main diving season lasted from 1 June to 30 September. A crew could include up to 30 people. Divers used a nose clip, ropes, a stone weight, and a woven oyster bag. The seib pulled each diver back to the surface. Every pearl depended on skill, trust, and teamwork.</p><p><a href='" + sourceLinks.diving + "' target='_blank' rel='noreferrer'>See the roles and tools</a></p>"
+          },
+          media: {
+            url: "https://www.alkhaleej.ae/sites/default/files/migrated/4476b75c-7fc4-49ea-b435-55ab4821410d.jpg",
+            caption: "The ropes and coordinated movement make the danger and teamwork visible.",
+            credit: "Pearl-diving image via <a href='https://www.alkhaleej.ae/%D9%85%D9%84%D8%AD%D9%82/%D8%A7%D9%84%D8%BA%D9%88%D8%B5-%D8%A8%D9%8A%D9%86-%D8%A7%D9%84%D8%AE%D8%B7%D8%B1-%D9%88%D8%A7%D9%84%D8%B8%D9%81%D8%B1' target='_blank' rel='noreferrer'>Al Khaleej</a>"
+          }
+        },
+        {
+          unique_id: "muraikhi-house",
+          start_date: { year: 1905, display_date: "Early 1900s" },
+          group: "Economic lifeline",
+          text: {
+            headline: "A merchant's house records the wealth of trade",
+            text: "<p>Pearl merchant Muhammad bin Jassim Al Muraikhi built Bait Al Muraikhi on Delma Island as a home and trading centre. Its size and design show the wealth, business networks, and social importance created by pearling at the industry's peak.</p><p><a href='" + sourceLinks.delma + "' target='_blank' rel='noreferrer'>Learn about Bait Al Muraikhi</a></p>"
+          },
+          media: {
+            url: "https://abudhabiculture.ae/-/media/abudhabiculture/abudhabiculture/images/cultural-heritage/heritage-register/new/dl-2.jpg?h=500&iar=0&rev=bdc9b97c2fa64cd0807a9cb61991d0d2&w=1328",
+            caption: "The merchant's building is physical evidence of pearling's former economic power.",
+            credit: "<a href='https://abudhabiculture.ae/en/cultural-sites/museums/delma-museum' target='_blank' rel='noreferrer'>Abu Dhabi Culture</a>"
+          }
+        },
+        {
+          unique_id: "cultured-pearls",
+          start_date: { year: 1920, display_date: "1920s" },
+          group: "Crisis and change",
+          text: {
+            headline: "Cultured pearls change the world market",
+            text: "<p>Japanese producers brought cultured pearls into global markets. They could produce pearls more regularly and sell them at lower prices than rare natural Gulf pearls. This new technology changed customer demand and weakened the main advantage of the Gulf industry.</p><p><strong>Turning point:</strong> the market changed before local communities could easily adapt.</p>"
+          },
+          media: {
+            url: "https://upload.wikimedia.org/wikipedia/commons/1/15/Mikimoto-Kokichi_%E5%BE%A1%E6%9C%A8%E6%9C%AC%E5%B9%B8%E5%90%89_84yo_1942.jpg",
+            caption: "Kokichi Mikimoto's work represents the technology that made cultured pearls a global competitor.",
+            credit: "Public-domain photograph: <a href='https://commons.wikimedia.org/wiki/File:Mikimoto-Kokichi_%E5%BE%A1%E6%9C%A8%E6%9C%AC%E5%B9%B8%E5%90%89_84yo_1942.jpg' target='_blank' rel='noreferrer'>Wikimedia Commons</a>"
+          }
+        },
+        {
+          unique_id: "great-depression",
+          start_date: { year: 1929, display_date: "1929–1930s" },
+          end_date: { year: 1939 },
+          group: "Crisis and change",
+          text: {
+            headline: "The Great Depression deepens the collapse",
+            text: "<p>The world economic crisis reduced demand for luxury goods. Gulf pearl prices and trade fell further. Divers, merchants, boat owners, and their families lost income at the same time. The problem was not one weak business. It affected an entire connected community.</p><p><a href='" + sourceLinks.history + "' target='_blank' rel='noreferrer'>Read the historical account</a></p>"
+          },
+          media: {
+            url: "https://media.assettype.com/gulfnews%2F2024-11-17%2Foxcdisgt%2FPEARL_2_1625585755946_17a7c76272b_original_ratio.jpg",
+            caption: "The same crews that once powered the economy faced fewer buyers and falling income.",
+            credit: "National Archives photograph via <a href='https://gulfnews.com/uae/year-of-the-50th/year-of-the-50th-a-look-at-uaes-pearl-diving-history-1.1625588554243' target='_blank' rel='noreferrer'>Gulf News</a>"
+          }
+        },
+        {
+          unique_id: "oil-transition",
+          start_date: { year: 1959, display_date: "1959–1962" },
+          end_date: { year: 1962, month: 7, day: 4 },
+          group: "Crisis and change",
+          text: {
+            headline: "Oil creates a new economic system",
+            text: "<p>Oil was found offshore Abu Dhabi in 1959, and the first export left in 1962. Oil created government income, infrastructure, and different jobs. It did not directly cause the pearl collapse, which had started earlier. However, it gave the region a powerful new path after pearling declined.</p><p><a href='" + sourceLinks.adnoc + "' target='_blank' rel='noreferrer'>Explore the oil milestones</a></p>"
+          },
+          media: {
+            url: "https://afdshd01.adnoc.ae/adn-prd/-/media/adnoc-v2/images/our-heritage/1962-1.ashx?h=1200&hash=1A87DE946C9F5477A831849476997113&w=1800",
+            caption: "The large tanker makes the new scale of the oil economy clear.",
+            credit: "1962 archive image: <a href='https://www.adnoc.ae/en/Our-Story/Our-Heritage' target='_blank' rel='noreferrer'>ADNOC</a>"
+          }
+        },
+        {
+          unique_id: "museum-restoration",
+          start_date: { year: 1993, display_date: "1993 and 2021" },
+          end_date: { year: 2021 },
+          group: "Heritage and renewal",
+          text: {
+            headline: "Bait Al Muraikhi becomes a museum",
+            text: "<p>The former pearl merchant's building was restored in 1993 and again in 2021. It now forms part of Delma Museum. The site protects objects, architecture, and stories that might otherwise be lost. A place of business has become a place of public memory.</p><p><a href='" + sourceLinks.delma + "' target='_blank' rel='noreferrer'>Open the Delma Museum guide</a></p>"
+          },
+          media: {
+            url: "https://abudhabiculture.ae/-/media/abudhabiculture/abudhabiculture/images/cultural-heritage/heritage-register/new/dl-1.jpg?h=500&iar=0&rev=-1&w=1328",
+            caption: "The restored building shows how the material history of pearl trade is protected today.",
+            credit: "<a href='https://abudhabiculture.ae/en/cultural-sites/museums/delma-museum' target='_blank' rel='noreferrer'>Abu Dhabi Culture</a>"
+          }
+        },
+        {
+          unique_id: "suwaidi-revival",
+          start_date: { year: 2004, display_date: "2004–present" },
+          group: "Heritage and renewal",
+          text: {
+            headline: "Suwaidi Pearls brings the tradition into the future",
+            text: "<p>Abdulla Rashed Al Suwaidi established a pearl initiative in Al Rams, Ras Al Khaimah, in 2004. It combines history, tourism, science, and oyster farming. Visitors learn how pearls form and how crews once worked. Pearling now creates cultural and educational value as well as a smaller modern business.</p><p><a href='" + sourceLinks.suwaidi + "' target='_blank' rel='noreferrer'>Visit Suwaidi Pearls</a></p>"
+          },
+          media: {
+            url: "https://optim.tildacdn.one/tild6561-3033-4039-b633-643433363265/-/resize/590x/-/format/webp/noroot.jpg.webp",
+            caption: "The floating pearl house connects traditional boats with modern learning and sustainable oyster farming.",
+            credit: "<a href='https://suwaidipearls.ae/' target='_blank' rel='noreferrer'>Suwaidi Pearls</a>"
+          }
+        }
+      ]
+    };
+
+    const reflectionText = [
+      "1. What is the main change and central argument?\nThe main change is the movement from pearling as a major source of income to pearling as protected cultural heritage. My timeline argues that local skill did not suddenly lose its value. Outside forces changed the system: cultured pearls created cheaper competition, the Great Depression reduced spending, and oil later offered new jobs. Today, museums and pearl farms keep the knowledge alive, even though pearling no longer supports the economy in the same way.",
+      "2. Which event is the turning point, and why?\nThe arrival of cultured pearls in the 1920s is the turning point. Natural Gulf pearls were rare and expensive, and divers took serious risks to collect them. Cultured pearls could be produced more regularly and sold for less. This changed what buyers expected and weakened demand for Gulf pearls. The Great Depression made the decline faster, but cultured pearls had already changed the market.",
+      "3. How do images and media strengthen the argument?\nImages show the human side of the industry. The diving photographs reveal teamwork and danger. The Delma Museum shows how trade wealth became heritage, and the oil tanker shows the scale of economic change. The modern pearl farm connects the past with sustainability and tourism. With text only, the audience would know the facts but would feel less of the effort, risk, and transformation."
+    ].join("\n\n");
+
+    function stripHtml(html) {
+      const node = document.createElement("div");
+      node.innerHTML = html;
+      return node.textContent.trim();
+    }
+
+    function escapeCsv(value) {
+      const text = value == null ? "" : String(value);
+      return '"' + text.replaceAll('"', '""') + '"';
+    }
+
+    function timelineRows() {
+      const headers = ["Year", "Month", "Day", "Time", "End Year", "End Month", "End Day", "End Time", "Display Date", "Headline", "Text", "Media", "Media Credit", "Media Caption", "Media Thumbnail", "Type", "Group", "Background"];
+      const title = ["", "", "", "", "", "", "", "", "", timelineData.title.text.headline, stripHtml(timelineData.title.text.text), timelineData.title.media.url, stripHtml(timelineData.title.media.credit), timelineData.title.media.caption, "", "title", "", "#061c25"];
+      const events = timelineData.events.map((event) => [
+        event.start_date.year,
+        event.start_date.month || "",
+        event.start_date.day || "",
+        "",
+        event.end_date?.year || "",
+        event.end_date?.month || "",
+        event.end_date?.day || "",
+        "",
+        event.start_date.display_date || "",
+        event.text.headline,
+        stripHtml(event.text.text),
+        event.media?.url || "",
+        event.media ? stripHtml(event.media.credit) : "",
+        event.media?.caption || "",
+        "",
+        "",
+        event.group || "",
+        ""
+      ]);
+      return [headers, title, ...events];
+    }
+
+    function downloadCsv() {
+      const csv = timelineRows().map((row) => row.map(escapeCsv).join(",")).join("\r\n");
+      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Saeed_Pearl_Industry_TimelineJS_Data.csv";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function renderFallback() {
+      const target = document.getElementById("fallbackEvents");
+      target.innerHTML = timelineData.events.map((event) => `
+        <article class="fallback-card">
+          <div class="fallback-date">${event.start_date.display_date || event.start_date.year}</div>
+          <div><h3>${event.text.headline}</h3><p>${stripHtml(event.text.text)}</p></div>
+        </article>`).join("");
+      document.getElementById("timeline-embed").hidden = true;
+      document.getElementById("fallback").hidden = false;
+      document.body.style.overflow = "auto";
+    }
+
+    function savePeerNotes() {
+      ["peerClarity", "peerDesign", "peerEffectiveness"].forEach((id) => {
+        localStorage.setItem("saeedPearlTimeline." + id, document.getElementById(id).value);
+      });
+    }
+
+    function loadPeerNotes() {
+      ["peerClarity", "peerDesign", "peerEffectiveness"].forEach((id) => {
+        document.getElementById(id).value = localStorage.getItem("saeedPearlTimeline." + id) || "";
+      });
+    }
+
+    function initializeTimeline() {
+      try {
+        if (!window.TL || !window.TL.Timeline) throw new Error("TimelineJS did not load");
+        new TL.Timeline("timeline-embed", timelineData, {
+          language: "en",
+          hash_bookmark: true,
+          start_at_slide: 0,
+          timenav_position: "bottom"
+        });
+      } catch (error) {
+        renderFallback();
+      }
+    }
+
+    const notesDialog = document.getElementById("notesDialog");
+    document.getElementById("openNotes").addEventListener("click", () => notesDialog.showModal());
+    document.getElementById("closeNotes").addEventListener("click", () => notesDialog.close());
+    notesDialog.addEventListener("click", (event) => {
+      const box = notesDialog.getBoundingClientRect();
+      const outside = event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom;
+      if (outside) notesDialog.close();
+    });
+
+    document.getElementById("downloadButton").addEventListener("click", downloadCsv);
+    document.getElementById("downloadButtonDialog").addEventListener("click", downloadCsv);
+    document.getElementById("copyReflections").addEventListener("click", async () => {
+      const status = document.getElementById("copyStatus");
+      try {
+        await navigator.clipboard.writeText(reflectionText);
+        status.textContent = "The three reflection answers were copied.";
+      } catch (error) {
+        status.textContent = "Copy was blocked by the browser. Select the answers above and copy them manually.";
+      }
+    });
+
+    ["peerClarity", "peerDesign", "peerEffectiveness"].forEach((id) => {
+      document.getElementById(id).addEventListener("input", savePeerNotes);
+    });
+
+    loadPeerNotes();
+    window.addEventListener("load", initializeTimeline, { once: true });
+  </script>
+</body>
+</html>
