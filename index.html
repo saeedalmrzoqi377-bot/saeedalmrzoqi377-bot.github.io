@@ -420,6 +420,9 @@
           <textarea id="peerEffectiveness" placeholder="Is the turning point convincing? Explain why."></textarea>
         </label>
       </div>
+      <div class="dialog-actions">
+        <button id="downloadPeerNotes" type="button">Download peer-review notes</button>
+      </div>
 
       <h3 class="section-title">Research sources</h3>
       <ol class="source-list">
@@ -701,6 +704,23 @@
       });
     }
 
+    function downloadPeerNotes() {
+      const text = [
+        "Clarity:\n" + document.getElementById("peerClarity").value,
+        "Design:\n" + document.getElementById("peerDesign").value,
+        "Effectiveness:\n" + document.getElementById("peerEffectiveness").value
+      ].join("\n\n");
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "Saeed_Pearl_Industry_Peer_Review_Notes.txt";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     function initializeTimeline() {
       try {
         if (!window.TL || !window.TL.Timeline) throw new Error("TimelineJS did not load");
@@ -726,6 +746,7 @@
 
     document.getElementById("downloadButton").addEventListener("click", downloadCsv);
     document.getElementById("downloadButtonDialog").addEventListener("click", downloadCsv);
+    document.getElementById("downloadPeerNotes").addEventListener("click", downloadPeerNotes);
     document.getElementById("copyReflections").addEventListener("click", async () => {
       const status = document.getElementById("copyStatus");
       try {
